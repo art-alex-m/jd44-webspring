@@ -1,19 +1,18 @@
 package ru.netology.httpserver2;
 
-import ru.netology.httpserver2.http.HttpHeader;
+import ru.netology.httpserver2.handler.Handler;
+import ru.netology.httpserver2.handler.HandlerKey;
+import ru.netology.httpserver2.http.HttpRequest;
+import ru.netology.httpserver2.http.HttpRequestBuilder;
 import ru.netology.httpserver2.http.HttpResponseBuilder;
-import ru.netology.httpserver2.http.HttpStatus;
 
 import java.io.BufferedOutputStream;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.net.Socket;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.time.LocalDateTime;
-import java.util.Arrays;
 import java.util.List;
+import java.util.Map;
 
 public class HandlerTask implements Runnable {
 
@@ -22,9 +21,11 @@ public class HandlerTask implements Runnable {
             "/events.html", "/events.js");
 
     private final Socket socket;
+    private final Map<HandlerKey, Handler> handlers;
 
-    public HandlerTask(Socket socket) {
+    public HandlerTask(Socket socket, Map<HandlerKey, Handler> handlers) {
         this.socket = socket;
+        this.handlers = handlers;
     }
 
     @Override
@@ -33,59 +34,50 @@ public class HandlerTask implements Runnable {
                 BufferedReader in = new BufferedReader(new InputStreamReader(socket.getInputStream()));
                 BufferedOutputStream out = new BufferedOutputStream(socket.getOutputStream())
         ) {
-            // read only request line for simplicity
-            // must be in form GET /path HTTP/1.1
-            String requestLine = in.readLine();
-            String[] parts = requestLine.split(" ");
+            HttpRequest request = parseRequest(in);
 
-            if (parts.length != 3) {
-                out.write(HttpResponseBuilder.badRequest().getBytes());
-                out.flush();
-                socket.close();
-                return;
-            }
-            System.out.println("Accept new request " + Arrays.toString(parts));
-            final var path = parts[1];
-            if (!VALID_PATHS.contains(path)) {
+            System.out.println("Accept new request " + request);
+
+            if (!VALID_PATHS.contains(request.getPath())) {
                 out.write(HttpResponseBuilder.notFound().getBytes());
                 out.flush();
                 return;
             }
 
-            Path filePath = Path.of(".", "public", path);
-            String mimeType = Files.probeContentType(filePath);
+            Handler defaultHandler = handlers.get(HandlerKey.defaultKey);
+            handlers.getOrDefault(new HandlerKey(request.getMethod(), request.getPath()), defaultHandler)
+                    .handle(request, out);
 
-            // special case for classic
-            if (path.equals("/classic.html")) {
-                String template = Files.readString(filePath);
-                byte[] content = template
-                        .replace("{time}", LocalDateTime.now().toString())
-                        .getBytes();
-
-                out.write(HttpResponseBuilder.builder()
-                        .setStatus(HttpStatus.OK)
-                        .addHeader(HttpHeader.CONTENT_LENGTH, content.length)
-                        .addHeader(HttpHeader.CONNECTION, "close")
-                        .addHeader(HttpHeader.CONTENT_TYPE, mimeType)
-                        .getBytes());
-                out.write(content);
-                out.flush();
-                return;
-            }
-
-            long length = Files.size(filePath);
-            String response = HttpResponseBuilder.builder()
-                    .setStatus(HttpStatus.OK)
-                    .addHeader(HttpHeader.CONTENT_TYPE, mimeType)
-                    .addHeader(HttpHeader.CONNECTION, "close")
-                    .addHeader(HttpHeader.CONTENT_LENGTH, length)
-                    .toString();
-
-            out.write(response.getBytes());
-            Files.copy(filePath, out);
-            out.flush();
         } catch (IOException e) {
             throw new RuntimeException(e);
+        } finally {
+            try {
+                socket.close();
+            } catch (IOException ignored) {
+            }
         }
+    }
+
+    public HttpRequest parseRequest(BufferedReader in) throws IOException {
+        /// read request line
+        HttpRequestBuilder requestBuilder = HttpRequest.builder();
+        String requestLine = in.readLine();
+        String[] parts = requestLine.split(" ");
+        requestBuilder
+                .setMethod(parts[0])
+                .setUri(parts[1])
+                .setVersion(parts[2]);
+
+        /// read request headers
+        while (true) {
+            String header = in.readLine();
+            if ("".equals(header)) break;
+            String[] chunks = header.split(":\s+");
+            try {
+                requestBuilder.addHeader(chunks[0], chunks[1]);
+            } catch (IllegalArgumentException | ArrayIndexOutOfBoundsException ignored) {
+            }
+        }
+        return requestBuilder.build();
     }
 }

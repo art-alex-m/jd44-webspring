@@ -16,6 +16,10 @@ public class HttpRequest {
         this.version = version;
     }
 
+    public static HttpRequestBuilder builder() {
+        return new HttpRequestBuilder();
+    }
+
     public String getPath() {
         return uri.getPath();
     }
@@ -30,5 +34,10 @@ public class HttpRequest {
 
     public String getVersion() {
         return version;
+    }
+
+    @Override
+    public String toString() {
+        return String.format("[%s %s %s]", method, uri, version);
     }
 }

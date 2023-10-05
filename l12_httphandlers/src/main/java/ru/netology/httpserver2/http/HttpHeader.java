@@ -11,6 +11,16 @@ public enum HttpHeader {
         this.name = name;
     }
 
+    public static HttpHeader nameof(String name) {
+        for (HttpHeader header : HttpHeader.values()) {
+            if (header.name.equals(name.toLowerCase())) {
+                return header;
+            }
+        }
+
+        throw new IllegalArgumentException("Unknown header " + name);
+    }
+
     @Override
     public String toString() {
         return name;

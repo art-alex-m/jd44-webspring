@@ -44,7 +44,8 @@ public class HttpResponseBuilder {
     public String toString() {
         StringBuilder builder = new StringBuilder();
 
-        builder.append(status)
+        builder
+                .append(status)
                 .append(Http.DELIMITER)
                 .append(headers.stream().map(Object::toString).collect(Collectors.joining(Http.DELIMITER)))
                 .append(Http.DELIMITER)
