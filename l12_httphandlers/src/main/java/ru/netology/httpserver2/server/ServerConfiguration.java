@@ -1,4 +1,4 @@
-package ru.netology.httpserver2;
+package ru.netology.httpserver2.server;
 
 public record ServerConfiguration(int port, int poolSize, int backlog) {
 

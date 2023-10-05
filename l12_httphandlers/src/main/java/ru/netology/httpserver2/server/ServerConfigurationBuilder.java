@@ -1,4 +1,4 @@
-package ru.netology.httpserver2;
+package ru.netology.httpserver2.server;
 
 public class ServerConfigurationBuilder {
     private int port;

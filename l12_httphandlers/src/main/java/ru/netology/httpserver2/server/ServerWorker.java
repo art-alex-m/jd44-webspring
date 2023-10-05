@@ -1,4 +1,4 @@
-package ru.netology.httpserver2;
+package ru.netology.httpserver2.server;
 
 import ru.netology.httpserver2.handler.Handler;
 import ru.netology.httpserver2.handler.HandlerKey;

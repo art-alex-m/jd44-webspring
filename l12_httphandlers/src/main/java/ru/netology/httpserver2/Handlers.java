@@ -6,6 +6,7 @@ import ru.netology.httpserver2.http.HttpHeader;
 import ru.netology.httpserver2.http.HttpMethod;
 import ru.netology.httpserver2.http.HttpResponseBuilder;
 import ru.netology.httpserver2.http.HttpStatus;
+import ru.netology.httpserver2.server.Server;
 
 import java.nio.file.Files;
 import java.nio.file.Path;
