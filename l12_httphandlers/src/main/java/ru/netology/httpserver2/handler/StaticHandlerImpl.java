@@ -21,17 +21,14 @@ public class StaticHandlerImpl implements Handler {
             return;
         }
 
-        String mimeType = Files.probeContentType(filePath);
-        long length = Files.size(filePath);
-
-        String response = HttpResponseBuilder.builder()
+        byte[] response = HttpResponseBuilder.builder()
                 .setStatus(HttpStatus.OK)
-                .addHeader(HttpHeader.CONTENT_TYPE, mimeType)
+                .addHeader(HttpHeader.CONTENT_TYPE, Files.probeContentType(filePath))
                 .addHeader(HttpHeader.CONNECTION, "close")
-                .addHeader(HttpHeader.CONTENT_LENGTH, length)
-                .toString();
+                .addHeader(HttpHeader.CONTENT_LENGTH, Files.size(filePath))
+                .getBytes();
 
-        out.write(response.getBytes());
+        out.write(response);
         Files.copy(filePath, out);
         out.flush();
     }

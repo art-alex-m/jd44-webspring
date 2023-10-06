@@ -42,16 +42,13 @@ public class HttpResponseBuilder {
 
     @Override
     public String toString() {
-        StringBuilder builder = new StringBuilder();
-
-        builder
+        return new StringBuilder()
                 .append(status)
                 .append(Http.DELIMITER)
                 .append(headers.stream().map(Object::toString).collect(Collectors.joining(Http.DELIMITER)))
                 .append(Http.DELIMITER)
-                .append(Http.DELIMITER);
-
-        return builder.toString();
+                .append(Http.DELIMITER)
+                .toString();
     }
 
     public byte[] getBytes() {

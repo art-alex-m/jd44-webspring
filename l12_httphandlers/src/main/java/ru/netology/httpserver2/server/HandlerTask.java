@@ -3,7 +3,7 @@ package ru.netology.httpserver2.server;
 import ru.netology.httpserver2.handler.Handler;
 import ru.netology.httpserver2.handler.HandlerKey;
 import ru.netology.httpserver2.http.HttpRequest;
-import ru.netology.httpserver2.http.HttpRequestBuilder;
+import ru.netology.httpserver2.http.HttpRequestParser;
 import ru.netology.httpserver2.http.HttpResponseBuilder;
 
 import java.io.BufferedOutputStream;
@@ -30,11 +30,10 @@ public class HandlerTask implements Runnable {
 
     @Override
     public void run() {
-        try (
-                BufferedReader in = new BufferedReader(new InputStreamReader(socket.getInputStream()));
-                BufferedOutputStream out = new BufferedOutputStream(socket.getOutputStream())
-        ) {
-            HttpRequest request = parseRequest(in);
+        try (BufferedReader in = new BufferedReader(new InputStreamReader(socket.getInputStream()));
+             BufferedOutputStream out = new BufferedOutputStream(socket.getOutputStream())) {
+
+            HttpRequest request = HttpRequestParser.parse(in);
 
             System.out.println("Accept new request " + request);
 
@@ -56,28 +55,5 @@ public class HandlerTask implements Runnable {
             } catch (IOException ignored) {
             }
         }
-    }
-
-    public HttpRequest parseRequest(BufferedReader in) throws IOException {
-        /// read request line
-        HttpRequestBuilder requestBuilder = HttpRequest.builder();
-        String requestLine = in.readLine();
-        String[] parts = requestLine.split(" ");
-        requestBuilder
-                .setMethod(parts[0])
-                .setUri(parts[1])
-                .setVersion(parts[2]);
-
-        /// read request headers
-        while (true) {
-            String header = in.readLine();
-            if ("".equals(header)) break;
-            String[] chunks = header.split(":\s+");
-            try {
-                requestBuilder.addHeader(chunks[0], chunks[1]);
-            } catch (IllegalArgumentException | ArrayIndexOutOfBoundsException ignored) {
-            }
-        }
-        return requestBuilder.build();
     }
 }

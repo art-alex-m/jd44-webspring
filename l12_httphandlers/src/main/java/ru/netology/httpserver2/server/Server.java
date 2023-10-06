@@ -37,8 +37,7 @@ public class Server {
     }
 
     public Server addHandler(HttpMethod method, String path, Handler handler) {
-        addHandler(new HandlerKey(method, path), handler);
-        return this;
+        return addHandler(new HandlerKey(method, path), handler);
     }
 
     public Server addHandler(HandlerKey key, Handler handler) {
