@@ -32,7 +32,14 @@ public class HandlerTask implements Runnable {
         try (BufferedInputStream in = new BufferedInputStream(socket.getInputStream());
              BufferedOutputStream out = new BufferedOutputStream(socket.getOutputStream())) {
 
-            HttpRequest request = HttpRequestParser.parse(in);
+            HttpRequest request;
+            try {
+                request = HttpRequestParser.parse(in);
+            } catch (Exception ex) {
+                out.write(HttpResponseBuilder.badRequest().getBytes());
+                out.flush();
+                return;
+            }
 
             System.out.println("Accept new request " + request);
 

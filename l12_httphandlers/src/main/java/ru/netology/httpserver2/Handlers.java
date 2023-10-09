@@ -9,6 +9,8 @@ import ru.netology.httpserver2.server.Server;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.time.LocalDateTime;
+import java.util.Collection;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 public class Handlers {
@@ -30,9 +32,18 @@ public class Handlers {
                     byte[] content = Files.readString(filePath)
                             .replace(
                                     "{postParams}",
-                                    request.getPostParams().stream()
+                                    Optional.ofNullable(request.getPostParams()).stream()
+                                            .flatMap(Collection::stream)
                                             .map(Object::toString)
                                             .collect(Collectors.joining("\n"))
+                            )
+                            .replace(
+                                    "{files}",
+                                    Optional.ofNullable(request.getFiles()).stream()
+                                            .flatMap(Collection::stream)
+                                            .map(im -> String.format("%s=%s (%sb)%n", im.getFieldName(), im.getName(),
+                                                    im.getSize()))
+                                            .collect(Collectors.joining())
                             )
                             .getBytes();
 
