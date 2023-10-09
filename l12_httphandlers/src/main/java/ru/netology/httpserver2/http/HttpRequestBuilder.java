@@ -16,9 +16,12 @@ public class HttpRequestBuilder {
     private URI uri;
     private String version;
     private List<NameValuePair> queryParams;
+    private List<NameValuePair> postParams;
 
     public HttpRequest build() {
-        return new HttpRequest(method, uri, version, headers, queryParams);
+        return new HttpRequest(method, uri, version, headers)
+                .setQueryParams(queryParams)
+                .setPostParams(postParams);
     }
 
     public HttpRequestBuilder addHeader(HttpHeader header, String value) {
@@ -51,6 +54,11 @@ public class HttpRequestBuilder {
 
     public HttpRequestBuilder setVersion(String version) {
         this.version = version.toUpperCase();
+        return this;
+    }
+
+    public HttpRequestBuilder setPostParams(String raw) {
+        this.postParams = URLEncodedUtils.parse(raw, StandardCharsets.UTF_8);
         return this;
     }
 }

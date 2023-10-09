@@ -40,4 +40,27 @@ class HttpRequestBuilderTest {
             Assertions.assertEquals(expectedParams.get(i).getValue(), resultParams.get(i).getValue());
         }
     }
+
+    @Test
+    void setPostParams_XWwwUrlEncoded() {
+        String params = "param1=1&param1=2&rus=%D1%80%D1%83%D1%81";
+        String undefinedName = "undefined_name";
+        List<NameValuePair> expectedParams = List.of(
+                new BasicNameValuePair("param1", "1"),
+                new BasicNameValuePair("param1", "2"),
+                new BasicNameValuePair("rus", "рус")
+        );
+        sut.setPostParams(params);
+
+        HttpRequest result = sut.build();
+
+        Assertions.assertEquals("1", result.getPostParam("param1").getValue());
+        Assertions.assertNull(result.getPostParam(undefinedName));
+        Assertions.assertEquals(3, result.getPostParams().size());
+        List<NameValuePair> resultParams = result.getPostParams();
+        for (int i = 0; i < expectedParams.size(); i++) {
+            Assertions.assertEquals(expectedParams.get(i).getName(), resultParams.get(i).getName());
+            Assertions.assertEquals(expectedParams.get(i).getValue(), resultParams.get(i).getValue());
+        }
+    }
 }

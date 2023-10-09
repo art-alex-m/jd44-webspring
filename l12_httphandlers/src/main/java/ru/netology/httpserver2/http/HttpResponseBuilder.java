@@ -26,6 +26,14 @@ public class HttpResponseBuilder {
                 .addHeader(HttpHeader.CONNECTION, "close");
     }
 
+    public static HttpResponseBuilder ok(int contentLength, String contentMimeType) {
+        return HttpResponseBuilder.builder()
+                .setStatus(HttpStatus.OK)
+                .addHeader(HttpHeader.CONTENT_LENGTH, contentLength)
+                .addHeader(HttpHeader.CONNECTION, "close")
+                .addHeader(HttpHeader.CONTENT_TYPE, contentMimeType);
+    }
+
     public HttpResponseBuilder setStatus(HttpStatus status) {
         this.status = status;
         return this;
