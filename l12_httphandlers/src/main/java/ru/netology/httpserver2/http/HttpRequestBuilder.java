@@ -1,7 +1,12 @@
 package ru.netology.httpserver2.http;
 
+import org.apache.http.NameValuePair;
+import org.apache.http.client.utils.URLEncodedUtils;
+
 import java.net.URI;
+import java.nio.charset.StandardCharsets;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 public class HttpRequestBuilder {
@@ -10,9 +15,10 @@ public class HttpRequestBuilder {
     private HttpMethod method;
     private URI uri;
     private String version;
+    private List<NameValuePair> queryParams;
 
     public HttpRequest build() {
-        return new HttpRequest(method, uri, version, headers);
+        return new HttpRequest(method, uri, version, headers, queryParams);
     }
 
     public HttpRequestBuilder addHeader(HttpHeader header, String value) {
@@ -35,6 +41,7 @@ public class HttpRequestBuilder {
 
     public HttpRequestBuilder setUri(URI uri) {
         this.uri = uri;
+        this.queryParams = URLEncodedUtils.parse(uri, StandardCharsets.UTF_8);
         return this;
     }
 
