@@ -1,7 +1,9 @@
 package ru.netology.httpserver2.http;
 
+import org.apache.commons.fileupload.FileItem;
 import org.apache.http.NameValuePair;
 import org.apache.http.client.utils.URLEncodedUtils;
+import org.apache.http.message.BasicNameValuePair;
 
 import java.net.URI;
 import java.nio.charset.StandardCharsets;
@@ -17,11 +19,13 @@ public class HttpRequestBuilder {
     private String version;
     private List<NameValuePair> queryParams;
     private List<NameValuePair> postParams;
+    private List<FileItem> files;
 
     public HttpRequest build() {
         return new HttpRequest(method, uri, version, headers)
                 .setQueryParams(queryParams)
-                .setPostParams(postParams);
+                .setPostParams(postParams)
+                .setFiles(files);
     }
 
     public HttpRequestBuilder addHeader(HttpHeader header, String value) {
@@ -59,6 +63,22 @@ public class HttpRequestBuilder {
 
     public HttpRequestBuilder setPostParams(String raw) {
         this.postParams = URLEncodedUtils.parse(raw, StandardCharsets.UTF_8);
+        return this;
+    }
+
+    public HttpRequestBuilder setPostParams(List<FileItem> params) {
+        this.postParams = params.stream()
+                .filter(FileItem::isFormField)
+                .map(p -> new BasicNameValuePair(p.getFieldName(), p.getString()))
+                .map(p -> (NameValuePair) p)
+                .toList();
+        return this;
+    }
+
+    public HttpRequestBuilder setFiles(List<FileItem> files) {
+        this.files = files.stream()
+                .filter(f -> !f.isFormField() && f.getSize() > 0)
+                .toList();
         return this;
     }
 }

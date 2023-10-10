@@ -1,5 +1,6 @@
 package ru.netology.httpserver2.http;
 
+import org.apache.commons.fileupload.FileItem;
 import org.apache.http.NameValuePair;
 
 import java.net.URI;
@@ -13,6 +14,7 @@ public class HttpRequest {
     private final String version;
     private List<NameValuePair> queryParams;
     private List<NameValuePair> postParams;
+    private List<FileItem> files;
 
     public HttpRequest(HttpMethod method, URI uri, String version, Map<HttpHeader, HeaderEntry> headers) {
         this.uri = uri;
@@ -85,9 +87,11 @@ public class HttpRequest {
     }
 
     public boolean isXWwwFormUrlencoded() {
-        String contentType = getHeader(HttpHeader.CONTENT_TYPE);
-        if (contentType == null) return false;
-        return contentType.toLowerCase().startsWith("application/x-www-form-urlencoded");
+        return checkContentType("application/x-www-form-urlencoded");
+    }
+
+    public boolean isMultipartFormData() {
+        return checkContentType("multipart/form-data");
     }
 
     public int getHeader(HttpHeader key, boolean asInt) {
@@ -104,5 +108,20 @@ public class HttpRequest {
             return null;
         }
         return header.value();
+    }
+
+    public List<FileItem> getFiles() {
+        return files;
+    }
+
+    HttpRequest setFiles(List<FileItem> files) {
+        this.files = files;
+        return this;
+    }
+
+    private boolean checkContentType(String startWith) {
+        String contentType = getHeader(HttpHeader.CONTENT_TYPE);
+        if (contentType == null) return false;
+        return contentType.toLowerCase().startsWith(startWith);
     }
 }

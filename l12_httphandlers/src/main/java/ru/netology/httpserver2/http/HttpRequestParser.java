@@ -1,12 +1,17 @@
 package ru.netology.httpserver2.http;
 
+import org.apache.commons.fileupload.*;
+import org.apache.commons.fileupload.disk.DiskFileItemFactory;
+
 import java.io.BufferedInputStream;
+import java.io.File;
 import java.io.IOException;
+import java.util.List;
 
 public class HttpRequestParser {
     private static final int BUFFER_SIZE = 512;
 
-    public static HttpRequest parse(BufferedInputStream inputStream) throws IOException {
+    public static HttpRequest parse(BufferedInputStream inputStream) throws IOException, FileUploadException {
         /// read request line
         HttpRequestBuilder requestBuilder = HttpRequest.builder();
         String[] parts = readLine(inputStream).split(" ");
@@ -35,6 +40,14 @@ public class HttpRequestParser {
             byte[] body = inputStream.readNBytes(contentLength);
             requestBuilder.setPostParams(new String(body));
         }
+        if (request.isMultipartFormData()) {
+            File repository = new File("uploads");
+            FileItemFactory factory = new DiskFileItemFactory(DiskFileItemFactory.DEFAULT_SIZE_THRESHOLD, repository);
+            FileUpload upload = new FileUpload(factory);
+            RequestContext context = new HttpRequestContext(request.getHeader(HttpHeader.CONTENT_TYPE), inputStream);
+            List<FileItem> fileItems = upload.parseRequest(context);
+            requestBuilder.setPostParams(fileItems).setFiles(fileItems);
+        }
 
         return requestBuilder.build();
     }
@@ -45,11 +58,11 @@ public class HttpRequestParser {
         int delimiterIndex = -1;
 
         do {
-            inputStream.mark(bytesToRead + buffer.length - 1);
+            inputStream.mark(bytesToRead + buffer.length);
             inputStream.skip(bytesToRead);
             int bytesRead = inputStream.read(buffer);
             delimiterIndex = bytesRead < 0 ? 0 : indexOfDelimiter(buffer, Http.DELIMITER_BYTES);
-            bytesToRead += delimiterIndex >= 0 ? delimiterIndex : buffer.length - 1;
+            bytesToRead += Math.abs(delimiterIndex);
             inputStream.reset();
         } while (delimiterIndex < 0);
 
@@ -60,18 +73,28 @@ public class HttpRequestParser {
     }
 
     public static int indexOfDelimiter(byte[] buffer, byte[] delimiter) {
+        int lastIndex = buffer.length;
         for (int i = 0; i < buffer.length; i++) {
+            if (buffer[i] != delimiter[0]) {
+                continue;
+            }
+            lastIndex = i;
             boolean found = true;
-            for (int j = 0; j < delimiter.length; j++) {
-                if (buffer[i + j] != delimiter[j]) {
-                    i += j;
+            int j = 1;
+            for (i++; j < delimiter.length; j++, i++) {
+                if (i >= buffer.length || buffer[i] != delimiter[j]) {
                     found = false;
+                    if (i < buffer.length) {
+                        lastIndex = buffer.length;
+                    }
                     break;
                 }
             }
-            if (found) return i;
+            if (found) {
+                return lastIndex;
+            }
         }
 
-        return -1;
+        return -lastIndex;
     }
 }
