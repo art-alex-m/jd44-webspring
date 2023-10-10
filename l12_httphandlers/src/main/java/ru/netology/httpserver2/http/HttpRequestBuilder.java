@@ -1,7 +1,14 @@
 package ru.netology.httpserver2.http;
 
+import org.apache.commons.fileupload.FileItem;
+import org.apache.http.NameValuePair;
+import org.apache.http.client.utils.URLEncodedUtils;
+import org.apache.http.message.BasicNameValuePair;
+
 import java.net.URI;
+import java.nio.charset.StandardCharsets;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 public class HttpRequestBuilder {
@@ -10,9 +17,15 @@ public class HttpRequestBuilder {
     private HttpMethod method;
     private URI uri;
     private String version;
+    private List<NameValuePair> queryParams;
+    private List<NameValuePair> postParams;
+    private List<FileItem> files;
 
     public HttpRequest build() {
-        return new HttpRequest(method, uri, version, headers);
+        return new HttpRequest(method, uri, version, headers)
+                .setQueryParams(queryParams)
+                .setPostParams(postParams)
+                .setFiles(files);
     }
 
     public HttpRequestBuilder addHeader(HttpHeader header, String value) {
@@ -35,6 +48,7 @@ public class HttpRequestBuilder {
 
     public HttpRequestBuilder setUri(URI uri) {
         this.uri = uri;
+        this.queryParams = URLEncodedUtils.parse(uri, StandardCharsets.UTF_8);
         return this;
     }
 
@@ -44,6 +58,27 @@ public class HttpRequestBuilder {
 
     public HttpRequestBuilder setVersion(String version) {
         this.version = version.toUpperCase();
+        return this;
+    }
+
+    public HttpRequestBuilder setPostParams(String raw) {
+        this.postParams = URLEncodedUtils.parse(raw, StandardCharsets.UTF_8);
+        return this;
+    }
+
+    public HttpRequestBuilder setPostParams(List<FileItem> params) {
+        this.postParams = params.stream()
+                .filter(FileItem::isFormField)
+                .map(p -> new BasicNameValuePair(p.getFieldName(), p.getString()))
+                .map(p -> (NameValuePair) p)
+                .toList();
+        return this;
+    }
+
+    public HttpRequestBuilder setFiles(List<FileItem> files) {
+        this.files = files.stream()
+                .filter(f -> !f.isFormField() && f.getSize() > 0)
+                .toList();
         return this;
     }
 }

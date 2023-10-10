@@ -14,5 +14,22 @@
   <input name="password" type="password" placeholder="Password">
   <button>Login</button>
 </form>
+<br>
+<form method="post">
+  <input name="login" placeholder="Login">
+  <input name="password" type="password" placeholder="Password">
+  <button>Login</button>
+</form>
+<br>
+<form method="post" enctype="multipart/form-data">
+  <input name="login" placeholder="Login">
+  <input name="password" type="password" placeholder="Password">
+  <input name="file" type="file">
+  <button>Login</button>
+</form>
+<h3>Recieved post params</h3>
+<pre>{postParams}</pre>
+<h3>Files uploaded</h3>
+<pre>{files}</pre>
 </body>
 </html>

@@ -1,6 +1,10 @@
 package ru.netology.httpserver2.http;
 
+import org.apache.commons.fileupload.FileItem;
+import org.apache.http.NameValuePair;
+
 import java.net.URI;
+import java.util.List;
 import java.util.Map;
 
 public class HttpRequest {
@@ -8,6 +12,9 @@ public class HttpRequest {
     private final HttpMethod method;
     private final Map<HttpHeader, HeaderEntry> headers;
     private final String version;
+    private List<NameValuePair> queryParams;
+    private List<NameValuePair> postParams;
+    private List<FileItem> files;
 
     public HttpRequest(HttpMethod method, URI uri, String version, Map<HttpHeader, HeaderEntry> headers) {
         this.uri = uri;
@@ -39,5 +46,82 @@ public class HttpRequest {
     @Override
     public String toString() {
         return String.format("[%s %s %s]", method, uri, version);
+    }
+
+    HttpRequest setQueryParams(List<NameValuePair> queryParams) {
+        this.queryParams = queryParams;
+        return this;
+    }
+
+    public NameValuePair getQueryParam(String name) {
+        for (NameValuePair pair : queryParams) {
+            if (pair.getName().equals(name)) {
+                return pair;
+            }
+        }
+
+        return null;
+    }
+
+    public List<NameValuePair> getQueryParams() {
+        return queryParams;
+    }
+
+    public NameValuePair getPostParam(String name) {
+        for (NameValuePair pair : postParams) {
+            if (pair.getName().equals(name)) {
+                return pair;
+            }
+        }
+
+        return null;
+    }
+
+    public List<NameValuePair> getPostParams() {
+        return postParams;
+    }
+
+    HttpRequest setPostParams(List<NameValuePair> postParams) {
+        this.postParams = postParams;
+        return this;
+    }
+
+    public boolean isXWwwFormUrlencoded() {
+        return checkContentType("application/x-www-form-urlencoded");
+    }
+
+    public boolean isMultipartFormData() {
+        return checkContentType("multipart/form-data");
+    }
+
+    public int getHeader(HttpHeader key, boolean asInt) {
+        HeaderEntry header = headers.getOrDefault(key, null);
+        if (header == null) {
+            return 0;
+        }
+        return Integer.parseInt(header.value());
+    }
+
+    public String getHeader(HttpHeader key) {
+        HeaderEntry header = headers.getOrDefault(key, null);
+        if (header == null) {
+            return null;
+        }
+        return header.value();
+    }
+
+    public List<FileItem> getFiles() {
+        return files;
+    }
+
+    HttpRequest setFiles(List<FileItem> files) {
+        this.files = files;
+        return this;
+    }
+
+    private boolean checkContentType(String startWith) {
+        String contentType = getHeader(HttpHeader.CONTENT_TYPE);
+        if (contentType == null) return false;
+        return contentType.toLowerCase().startsWith(startWith);
     }
 }
