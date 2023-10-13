@@ -8,12 +8,13 @@ import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
-import java.util.concurrent.ForkJoinPool;
+import java.util.concurrent.TimeUnit;
 
 public class Server {
 
     private final ServerConfiguration config;
     private final Map<HandlerKey, Handler> handlers = new ConcurrentHashMap<>();
+    private ExecutorService executorService;
 
 
     public Server(ServerConfiguration config) {
@@ -21,16 +22,16 @@ public class Server {
     }
 
     public void listen() {
-        ExecutorService executorService = Executors.newWorkStealingPool(config.poolSize() + 1);
-
+        executorService = Executors.newWorkStealingPool(config.poolSize() + 1);
         executorService.submit(new ServerWorker(config.port(), config.backlog(), executorService, handlers));
+    }
 
-        ForkJoinPool poolExecutor = (ForkJoinPool) executorService;
-
-        while (!Thread.interrupted() && poolExecutor.getActiveThreadCount() > 0) {
+    public void shutdown() {
+        executorService.shutdown();
+        while (true) {
             try {
-                Thread.sleep(config.sleep());
-            } catch (InterruptedException e) {
+                if (!executorService.awaitTermination(config.sleep(), TimeUnit.MILLISECONDS)) break;
+            } catch (InterruptedException ignored) {
                 break;
             }
         }

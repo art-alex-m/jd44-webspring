@@ -35,6 +35,9 @@ public class HandlerTask implements Runnable {
             HttpRequest request;
             try {
                 request = HttpRequestParser.parse(in);
+            } catch (NoClassDefFoundError ex) {
+                ex.printStackTrace();
+                return;
             } catch (Exception ex) {
                 out.write(HttpResponseBuilder.badRequest().getBytes());
                 out.flush();

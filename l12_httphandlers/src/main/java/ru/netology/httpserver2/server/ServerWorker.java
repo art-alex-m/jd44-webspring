@@ -26,7 +26,7 @@ public class ServerWorker implements Runnable {
     public void run() {
         try (ServerSocket serverSocket = new ServerSocket(port, backlog)) {
             System.out.println("Start accept connections on port " + port);
-            while (!Thread.interrupted()) {
+            while (!Thread.interrupted() && !executorService.isShutdown()) {
                 Socket socket = serverSocket.accept();
                 executorService.submit(new HandlerTask(socket, handlers));
             }
