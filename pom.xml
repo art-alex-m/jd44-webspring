@@ -11,6 +11,7 @@
     <modules>
         <module>l10_httpserver</module>
         <module>l12_httphandlers</module>
+        <module>l20_servlets</module>
     </modules>
 
     <properties>
