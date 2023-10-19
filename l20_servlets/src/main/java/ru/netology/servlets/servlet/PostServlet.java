@@ -3,11 +3,11 @@ package ru.netology.servlets.servlet;
 import jakarta.servlet.http.HttpServlet;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
+import org.springframework.context.ApplicationContext;
+import org.springframework.context.annotation.AnnotationConfigApplicationContext;
+import ru.netology.servlets.AppConfig;
 import ru.netology.servlets.controller.PostController;
 import ru.netology.servlets.exception.NotFoundException;
-import ru.netology.servlets.repository.PostRepository;
-import ru.netology.servlets.repository.PostRepositoryMapImpl;
-import ru.netology.servlets.service.PostService;
 
 import java.io.IOException;
 
@@ -18,9 +18,8 @@ public class PostServlet extends HttpServlet {
 
     @Override
     public void init() {
-        final PostRepository repository = new PostRepositoryMapImpl();
-        final PostService service = new PostService(repository);
-        controller = new PostController(service);
+        ApplicationContext applicationContext = new AnnotationConfigApplicationContext(AppConfig.class);
+        controller = applicationContext.getBean(PostController.class);
     }
 
     @Override
