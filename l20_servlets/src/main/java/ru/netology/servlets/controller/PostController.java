@@ -2,12 +2,14 @@ package ru.netology.servlets.controller;
 
 import com.google.gson.Gson;
 import jakarta.servlet.http.HttpServletResponse;
+import org.springframework.stereotype.Controller;
 import ru.netology.servlets.model.Post;
 import ru.netology.servlets.service.PostService;
 
 import java.io.IOException;
 import java.io.Reader;
 
+@Controller
 public class PostController {
     private final PostService service;
     private final Gson gson;
