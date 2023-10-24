@@ -2,6 +2,7 @@ package ru.netology.springmvc.exception;
 
 public class NotFoundException extends RuntimeException {
     public NotFoundException() {
+        super("Not found exception");
     }
 
     public NotFoundException(String message) {

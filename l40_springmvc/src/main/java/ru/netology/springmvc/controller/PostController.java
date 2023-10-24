@@ -1,51 +1,42 @@
 package ru.netology.springmvc.controller;
 
-import com.google.gson.Gson;
-import jakarta.servlet.http.HttpServletResponse;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
-import ru.netology.springmvc.model.Post;
+import org.springframework.web.bind.annotation.*;
+import ru.netology.springmvc.dto.PostDto;
 import ru.netology.springmvc.service.PostService;
 
-import java.io.IOException;
-import java.io.Reader;
+import java.util.List;
 
 @RestController
-@RequestMapping("/api/posts")
+@RequestMapping(value = "/api/posts")
 public class PostController {
-    private final PostService service;
-    private final Gson gson;
+    private final PostService<PostDto> service;
 
-    public PostController(PostService service) {
+    public PostController(PostService<PostDto> service) {
         this.service = service;
-        this.gson = new Gson();
     }
 
-    public void read(HttpServletResponse response) throws IOException {
-        final var data = service.all();
-        response.getWriter().print(gson.toJson(data));
+    @GetMapping
+    public List<PostDto> read() {
+        return service.all();
     }
 
-    public void read(long id, HttpServletResponse response) throws IOException {
-        response.getWriter().print(gson.toJson(service.getById(id)));
+    @GetMapping("/{id}")
+    public PostDto read(@PathVariable long id) {
+        return service.getById(id);
     }
 
-    public void create(Reader body, HttpServletResponse response) throws IOException {
-        final Post post = gson.fromJson(body, Post.class);
-        final Post data = service.store(post);
-        response.setStatus(HttpServletResponse.SC_CREATED);
-        response.getWriter().print(gson.toJson(data));
+    @PostMapping
+    public PostDto create(@RequestBody PostDto post) {
+        return service.store(post);
     }
 
-    public void update(Reader body, HttpServletResponse response) throws IOException {
-        final Post post = gson.fromJson(body, Post.class);
-        final Post data = service.update(post);
-        response.setStatus(HttpServletResponse.SC_OK);
-        response.getWriter().print(gson.toJson(data));
+    @PutMapping("/{id}")
+    public PostDto update(@PathVariable long id, @RequestBody PostDto post) {
+        return service.update(new PostDto(id, post.content()));
     }
 
-    public void delete(long id, HttpServletResponse response) {
-        response.setStatus(HttpServletResponse.SC_OK);
+    @DeleteMapping("/{id}")
+    public void delete(@PathVariable long id) {
         service.removeById(id);
     }
 }

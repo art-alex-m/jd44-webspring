@@ -1,0 +1,29 @@
+###
+GET http://localhost:{{port}}/api/posts
+
+
+###
+POST http://localhost:{{port}}/api/posts
+Content-Type: application/json
+
+{
+  "content": "Last Post"
+}
+
+
+###
+GET http://localhost:{{port}}/api/posts/2
+
+
+###
+PUT http://localhost:{{port}}/api/posts/2
+Content-Type: application/json
+
+{
+  "id": 3,
+  "content": "Last Post 2"
+}
+
+
+###
+DELETE http://localhost:{{port}}/api/posts/2
