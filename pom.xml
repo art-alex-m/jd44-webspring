@@ -12,6 +12,7 @@
         <module>l10_httpserver</module>
         <module>l12_httphandlers</module>
         <module>l20_servlets</module>
+        <module>l40_springmvc</module>
     </modules>
 
     <properties>
