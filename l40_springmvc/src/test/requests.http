@@ -16,7 +16,7 @@ GET http://localhost:{{port}}/api/posts/2
 
 
 ###
-PUT http://localhost:{{port}}/api/posts/4
+PUT http://localhost:{{port}}/api/posts/2
 Content-Type: application/json
 
 {
